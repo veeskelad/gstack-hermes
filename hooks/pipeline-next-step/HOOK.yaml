@@ -1,0 +1,3 @@
+name: pipeline-next-step
+description: "After agent completes a /yc-* or /sec-cso skill, append a 'Next Steps' suggestion to MEMORY.md (gstack pipeline)."
+events: [agent:end]

@@ -1,0 +1,14 @@
+{
+  "_doc": "Mapping last skill → recommended next step for hermes. Used by hooks/pipeline-next-step/handler.py. Keys are skill names without leading slash. Adjusted from gstack original to reference only skills that exist in hermes (yc-review → requesting-code-review; removed Claude-Code-only steps like verify, vercel:deploy).",
+
+  "yc-office-hours":                { "next": "yc-ceo-review",            "why": "check scope in 4 modes (Expansion / Selective / Hold / Reduction)" },
+  "yc-ceo-review":                  { "next": "writing-plans",            "why": "draft formal task plan (hermes-native superpowers-adapted skill)" },
+  "writing-plans":                  { "next": "yc-eng-review",            "why": "arch-review the plan: diagrams, edge cases, test plan" },
+  "yc-eng-review":                  { "next": "sec-cso",                  "why": "OWASP + STRIDE if there is user input / auth / payments / PII" },
+  "yc-design-review":               { "next": "writing-plans",            "why": "fold UX edits back into the task plan" },
+  "yc-devex-review":                { "next": "writing-plans",            "why": "fold DX improvements into the task plan" },
+  "sec-cso":                        { "next": "executing-plans",          "why": "start implementation (hermes-native)" },
+  "executing-plans":                { "next": "requesting-code-review",   "why": "pre-commit verification + security scan (hermes-native, replaces gstack /yc-review)" },
+  "subagent-driven-development":    { "next": "requesting-code-review",   "why": "pre-commit verification + security scan" },
+  "yc-retro":                       { "next": "yc-learn",                 "why": "capture learnings into ~/.hermes/memories/lessons.md" }
+}

@@ -1,0 +1,84 @@
+name: Validate skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate SKILL.md files
+        run: |
+          python3 << 'PYEOF'
+          import sys
+          from pathlib import Path
+          import yaml
+
+          MAX_DESC = 1024
+          MAX_FILE_BYTES = 100_000
+          REQUIRED = {"name", "description"}
+
+          errors = 0
+          for skill_md in sorted(Path("skills").rglob("SKILL.md")):
+              raw = skill_md.read_text(encoding="utf-8")
+              if len(raw.encode("utf-8")) > MAX_FILE_BYTES:
+                  print(f"ERROR {skill_md}: file >{MAX_FILE_BYTES} bytes")
+                  errors += 1
+                  continue
+
+              lines = raw.splitlines()
+              if not lines or lines[0].strip() != "---":
+                  print(f"ERROR {skill_md}: no frontmatter")
+                  errors += 1
+                  continue
+              end = None
+              for i in range(1, len(lines)):
+                  if lines[i].strip() == "---":
+                      end = i
+                      break
+              if end is None:
+                  print(f"ERROR {skill_md}: unclosed frontmatter")
+                  errors += 1
+                  continue
+
+              try:
+                  fm = yaml.safe_load("\n".join(lines[1:end])) or {}
+              except yaml.YAMLError as e:
+                  print(f"ERROR {skill_md}: invalid YAML: {e}")
+                  errors += 1
+                  continue
+
+              missing = REQUIRED - set(fm.keys())
+              if missing:
+                  print(f"ERROR {skill_md}: missing required fields {missing}")
+                  errors += 1
+
+              desc = fm.get("description", "")
+              if isinstance(desc, str) and len(desc) > MAX_DESC:
+                  print(f"ERROR {skill_md}: description >{MAX_DESC} chars ({len(desc)})")
+                  errors += 1
+
+              body = "\n".join(lines[end + 1:]).strip()
+              if not body:
+                  print(f"ERROR {skill_md}: empty body")
+                  errors += 1
+
+              print(f"OK    {skill_md.parent.name}")
+
+          if errors:
+              print(f"\nFAILED: {errors} error(s)")
+              sys.exit(1)
+          print("\nAll skills valid.")
+          PYEOF
