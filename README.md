@@ -6,10 +6,11 @@ Adapted from [garrytan/gstack](https://github.com/garrytan/gstack) (Claude Code 
 
 ## What you get
 
-11 skills:
+12 skills:
 
 | Skill | What it does |
 |---|---|
+| `gstack` | **Entry-point menu.** Two-level inline-keyboard (L1 categories → L2 concrete skill) via hermes `clarify_tool`. Run `/gstack` when you don't remember which `/yc-*` to call. |
 | `yc-office-hours` | YC-style 6 forcing questions for a new idea. Saves a design doc to `~/.hermes/projects/<slug>/designs/`. |
 | `yc-ceo-review` | CEO-mode plan review: 4 scope modes (Expansion / Selective / Hold / Reduction). |
 | `yc-eng-review` | Engineering-mode plan review: diagrams, edge cases, test plan. |
@@ -61,6 +62,42 @@ hermes skills install veeskelad/gstack-hermes/ship
 > mkdir -p ~/.hermes/skills/gstack-hermes
 > cp -r /tmp/gstack-hermes/skills/* ~/.hermes/skills/gstack-hermes/
 > ```
+
+## How `/gstack` and auto-progression work
+
+**Discovery via `/gstack`:**
+
+```
+/gstack
+  ↓ (L1 clarify)
+🧠 Review  ⚙️ Workflow  📝 Retro & Learn  🔒 Security
+  ↓ (L2 clarify, per category)
+/yc-office-hours  /yc-ceo-review  /yc-eng-review  /yc-design-review
+  ↓
+agent reads ~/.hermes/skills/gstack-hermes/<chosen>/SKILL.md
+and executes it
+```
+
+If `~/.hermes/memories/MEMORY.md` has a fresh `### Next Steps (gstack pipeline, ...)` from the previous run, `/gstack` adds a 5th L1 option «↪ Продолжить с прошлого шага» that jumps straight to the suggested next skill.
+
+**Auto-progression after each skill:**
+
+Each skill's frontmatter declares its `pipeline_successor`:
+
+```yaml
+metadata:
+  hermes:
+    pipeline_successor: yc-ceo-review
+```
+
+The HERMES_NOTE at the top of every SKILL.md instructs the agent: after completing the skill body, call `clarify_tool` with «Готово. Дальше — /<successor>?» and 3 buttons:
+- **Да** → agent reads + executes the successor SKILL.md
+- **Пропустить** → clean exit
+- **Сделать другое** → free-form
+
+Terminal skills (`document-generate`, `yc-learn`, `gstack` itself) have `pipeline_successor: null` and do not auto-suggest.
+
+**Backup channel:** the `pipeline-next-step/handler.py` hook still writes the suggestion to `~/.hermes/memories/MEMORY.md` on every `agent:end`. This is a secondary signal — if the model skipped the auto-progression clarify call for any reason, the suggestion still surfaces in the next session via memory prefetch.
 
 ### 3. Install the pipeline-next-step hook (optional)
 

@@ -6,13 +6,24 @@ metadata:
   hermes:
     tags: [security, owasp, stride, threat-modeling]
     related_skills: [yc-eng-review]
+    pipeline_successor: executing-plans
 ---
 
-> **Hermes adaptation note:** Ported from gstack (Claude Code plugin). Hermes has no native `AskUserQuestion` tool — when the skill says to use it, ask the user in a plain chat message and wait for the reply. Artifact paths use `~/.hermes/projects/<slug>/` instead of `~/.gstack/projects/<slug>/`. Skill content is preserved as-is from upstream — Plan Mode / Voice / Telemetry sections that reference Claude-Code-only bin tools degrade silently in hermes.
+> **Hermes adaptation note:** Ported from gstack (Claude Code plugin). Hermes has no native `AskUserQuestion` tool — use the native `clarify` tool (`clarify_tool(question, choices)`) instead when the skill body says to ask the user for a choice. For open-ended free-text follow-up, just ask in a plain chat message and wait for the reply. Artifact paths use `~/.hermes/projects/<slug>/` instead of `~/.gstack/projects/<slug>/`. Skill content is preserved as-is from upstream — Plan Mode / Voice / Telemetry sections that reference Claude-Code-only bin tools degrade silently in hermes.
 >
 > **Language:** The skill body is written in English, but respond to the user in the user's language. If the user writes in Russian — translate all questions, option labels, and prose to Russian on the fly. Keep technical identifiers — file paths, code, slash-commands, env vars, YAML keys — in their original form.
 >
-> **Output formatting (important for Telegram/Discord/Slack gateways):** Do NOT echo `**double-asterisk bold**` or `__double-underscore bold__` from the skill body into your replies. Telegram MarkdownV2 conversion is inconsistent for questions delivered via the clarify/inline-keyboard path and they may render as literal asterisks. Use plain text emphasis instead: surround keywords with `«` `»`, use ALL CAPS for category labels, or prefix list items with `→`. Single `*italic*` and inline `\`code\`` are fine. Headers and bullet lists are fine.
+> **Output formatting (Telegram/Discord/Slack gateways):**
+> - In **prose reply text** (regular message body, including numbered/bulleted lists you write directly to the user) — `**markdown bold**` is OK for option labels and key terms. The gateway's `format_message` converts it to platform-native bold. Example: `1. **A) SCOPE EXPANSION** — расширяем scope в 4 направлениях`.
+> - In `clarify_tool` calls — the `choices` array values must be **PLAIN TEXT** with NO `**bold**` or `__underline__`. The inline-keyboard render path does NOT apply MarkdownV2 conversion, so double-asterisks leak as literal characters.
+> - Additional emphasis: «кавычки-ёлочки» for quotes, ALL CAPS for category labels, `→` prefix for list items. Single `*italic*` and inline `\`code\`` are fine in both prose and clarify choices.
+>
+> **Pipeline auto-progression:** If this skill's frontmatter has `metadata.hermes.pipeline_successor: <next-skill-name>`, then AFTER you finish the skill body (delivered the design doc / review / artifact and saved any files), you MUST call `clarify_tool` with question `"Готово. Дальше — /<next-skill-name>?"` and choices `["Да, запусти /<next>", "Пропустить", "Сделать другое"]` (translated to the user's language). On user's pick:
+> - «Да»: `read_file('~/.hermes/skills/gstack-hermes/<next>/SKILL.md')`, then follow its instructions step-by-step (hermes has no `skill_load` tool — read+execute is the path).
+> - «Пропустить»: end the conversation cleanly.
+> - «Сделать другое»: ask what they want and route from there.
+> If `pipeline_successor` is not set or is null — skip this step (terminal skill).
+> Also append a one-line text reminder before the clarify call: `**Next pipeline step:** /<next-skill-name>` — so the user sees it even if the clarify card is dismissed.
 
 ## When to invoke this skill
 

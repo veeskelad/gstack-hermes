@@ -2,6 +2,10 @@
   "_doc": "Optional categorization for hermes skills hub UI. See https://skills.sh/.",
   "groupings": [
     {
+      "title": "Entry Point",
+      "skills": ["gstack"]
+    },
+    {
       "title": "YC Plan Review",
       "skills": ["yc-office-hours", "yc-ceo-review", "yc-eng-review", "yc-design-review", "yc-devex-review", "autoplan"]
     },
