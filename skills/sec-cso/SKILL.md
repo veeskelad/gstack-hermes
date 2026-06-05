@@ -10,7 +10,9 @@ metadata:
 
 > **Hermes adaptation note:** Ported from gstack (Claude Code plugin). Hermes has no native `AskUserQuestion` tool — when the skill says to use it, ask the user in a plain chat message and wait for the reply. Artifact paths use `~/.hermes/projects/<slug>/` instead of `~/.gstack/projects/<slug>/`. Skill content is preserved as-is from upstream — Plan Mode / Voice / Telemetry sections that reference Claude-Code-only bin tools degrade silently in hermes.
 >
-> **Language:** The skill body is written in English, but **respond to the user in the user's language** (if the user writes in Russian — translate all questions, option labels, and prose to Russian on the fly). Keep technical identifiers — file paths, code, slash-commands, env vars, YAML keys — in their original form.
+> **Language:** The skill body is written in English, but respond to the user in the user's language. If the user writes in Russian — translate all questions, option labels, and prose to Russian on the fly. Keep technical identifiers — file paths, code, slash-commands, env vars, YAML keys — in their original form.
+>
+> **Output formatting (important for Telegram/Discord/Slack gateways):** Do NOT echo `**double-asterisk bold**` or `__double-underscore bold__` from the skill body into your replies. Telegram MarkdownV2 conversion is inconsistent for questions delivered via the clarify/inline-keyboard path and they may render as literal asterisks. Use plain text emphasis instead: surround keywords with `«` `»`, use ALL CAPS for category labels, or prefix list items with `→`. Single `*italic*` and inline `\`code\`` are fine. Headers and bullet lists are fine.
 
 ## When to invoke this skill
 
