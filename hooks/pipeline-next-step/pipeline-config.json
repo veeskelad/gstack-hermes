@@ -8,7 +8,10 @@
   "yc-design-review":               { "next": "writing-plans",            "why": "fold UX edits back into the task plan" },
   "yc-devex-review":                { "next": "writing-plans",            "why": "fold DX improvements into the task plan" },
   "sec-cso":                        { "next": "executing-plans",          "why": "start implementation (hermes-native)" },
+  "autoplan":                       { "next": "executing-plans",          "why": "batch review (CEO + Eng + Design + DevEx) done — proceed to implementation" },
   "executing-plans":                { "next": "requesting-code-review",   "why": "pre-commit verification + security scan (hermes-native, replaces gstack /yc-review)" },
   "subagent-driven-development":    { "next": "requesting-code-review",   "why": "pre-commit verification + security scan" },
+  "requesting-code-review":         { "next": "ship",                     "why": "tests + diff review + version bump + deploy workflow" },
+  "ship":                           { "next": "yc-retro",                 "why": "retrospective on the released change" },
   "yc-retro":                       { "next": "yc-learn",                 "why": "capture learnings into ~/.hermes/memories/lessons.md" }
 }

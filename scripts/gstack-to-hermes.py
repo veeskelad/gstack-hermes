@@ -39,6 +39,12 @@ HERMES_META = {
                          "related_skills": []},
     "sec-cso":          {"tags": ["security", "owasp", "stride", "threat-modeling"],
                          "related_skills": ["yc-eng-review"]},
+    "autoplan":         {"tags": ["yc", "review", "batch", "orchestrator"],
+                         "related_skills": ["yc-ceo-review", "yc-eng-review", "yc-design-review", "yc-devex-review"]},
+    "document-generate": {"tags": ["documentation", "scaffolding"],
+                          "related_skills": []},
+    "ship":             {"tags": ["workflow", "release", "deploy", "version-bump"],
+                         "related_skills": ["yc-retro"]},
     # yc-learn handled separately in Stage 2
 }
 
@@ -54,6 +60,12 @@ HERMES_NOTE = (
 # Disclaimer мы сами добавили в Claude Code форке — для hermes лишний.
 CLAUDE_DISCLAIMER_RE = re.compile(
     r"^> \*\*Adaptation note \(gstack personal fork\):\*\*.*?(?=\n\n|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+
+# Existing hermes note from a prior translation run — strip to keep translator idempotent.
+EXISTING_HERMES_NOTE_RE = re.compile(
+    r"^> \*\*Hermes adaptation note:\*\*.*?(?=\n\n|\Z)",
     re.MULTILINE | re.DOTALL,
 )
 
@@ -120,6 +132,9 @@ def adapt_skill_md(path: Path, skill_name: str):
 
     # Strip Claude Code disclaimer
     body = CLAUDE_DISCLAIMER_RE.sub("", body, count=1).lstrip("\n")
+
+    # Strip prior hermes note(s) — could be multiple from earlier non-idempotent runs
+    body = EXISTING_HERMES_NOTE_RE.sub("", body).lstrip("\n")
 
     # Apply sed rules
     body = apply_sed_rules(body)

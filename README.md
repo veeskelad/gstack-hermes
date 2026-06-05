@@ -6,7 +6,7 @@ Adapted from [garrytan/gstack](https://github.com/garrytan/gstack) (Claude Code 
 
 ## What you get
 
-8 skills:
+11 skills:
 
 | Skill | What it does |
 |---|---|
@@ -15,9 +15,12 @@ Adapted from [garrytan/gstack](https://github.com/garrytan/gstack) (Claude Code 
 | `yc-eng-review` | Engineering-mode plan review: diagrams, edge cases, test plan. |
 | `yc-design-review` | UX/UI plan review, AI-slop detection. |
 | `yc-devex-review` | Time-to-hello-world DX audit. |
+| `autoplan` | Batch orchestrator — runs CEO + Eng + Design + DevEx reviews sequentially with auto-decisions. |
 | `yc-retro` | Weekly engineering retrospective. |
 | `yc-learn` | Capture / search / prune project learnings. Writes `###` sections to `~/.hermes/memories/lessons.md` (compatible with `file-size-guard` hook). |
 | `sec-cso` | Chief Security Officer mode: OWASP Top 10 + STRIDE threat-modeling on a plan. |
+| `document-generate` | Generate missing documentation for a feature, module, or entire project. |
+| `ship` | Release workflow: detect base branch, run tests, review diff, bump VERSION, update CHANGELOG, push. |
 
 Plus one hook:
 
@@ -43,10 +46,21 @@ hermes skills install veeskelad/gstack-hermes/yc-ceo-review
 hermes skills install veeskelad/gstack-hermes/yc-eng-review
 hermes skills install veeskelad/gstack-hermes/yc-design-review
 hermes skills install veeskelad/gstack-hermes/yc-devex-review
+hermes skills install veeskelad/gstack-hermes/autoplan
 hermes skills install veeskelad/gstack-hermes/yc-retro
 hermes skills install veeskelad/gstack-hermes/yc-learn
 hermes skills install veeskelad/gstack-hermes/sec-cso
+hermes skills install veeskelad/gstack-hermes/document-generate
+hermes skills install veeskelad/gstack-hermes/ship
 ```
+
+> **Note:** hermes security scanner may flag the skills as `dangerous` (false positive on bash patterns like `AGENTS.md`, `rm`, `sudo`). If installs are blocked, sideload manually:
+>
+> ```bash
+> git clone https://github.com/veeskelad/gstack-hermes /tmp/gstack-hermes
+> mkdir -p ~/.hermes/skills/gstack-hermes
+> cp -r /tmp/gstack-hermes/skills/* ~/.hermes/skills/gstack-hermes/
+> ```
 
 ### 3. Install the pipeline-next-step hook (optional)
 
@@ -68,22 +82,31 @@ scope unclear ───────► /yc-ceo-review
                            ▼
 need task plan ──────► /writing-plans            (hermes-native)
                            │
+              ┌────────────┴─────────────┐
+              ▼                          ▼
+  individual reviews            batch shortcut:
+   /yc-eng-review                    /autoplan
+   /yc-design-review                 (CEO+Eng+Design+DevEx in one shot)
+   /yc-devex-review
+   /sec-cso (if auth/payments)
+              │                          │
+              └────────────┬─────────────┘
                            ▼
-arch check ──────────► /yc-eng-review
+                  /executing-plans            (hermes-native)
                            │
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-   /yc-design-review  /sec-cso  /executing-plans  (hermes-native)
-              │            │            │
-              └────────────┼────────────┘
                            ▼
-                  /requesting-code-review    (hermes-native)
+                  /requesting-code-review     (hermes-native)
+                           │
+                           ▼
+                       /ship                  (tests + version bump + deploy)
                            │
                            ▼ (post-release)
                        /yc-retro
                            │
                            ▼
                        /yc-learn
+
+orthogonal (any time):  /document-generate (scaffold docs for module/project)
 ```
 
 After each pipeline skill, `pipeline-next-step` hook writes a suggestion to `MEMORY.md` — it'll be picked up by hermes memory prefetch on the next session. Pure recommendation; ignore if not relevant.
