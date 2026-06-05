@@ -9,6 +9,8 @@ metadata:
 ---
 
 > **Hermes adaptation note:** Ported from gstack (Claude Code plugin). Hermes has no native `AskUserQuestion` tool — when the skill says to use it, ask the user in a plain chat message and wait for the reply. Artifact paths use `~/.hermes/projects/<slug>/` instead of `~/.gstack/projects/<slug>/`. Skill content is preserved as-is from upstream — Plan Mode / Voice / Telemetry sections that reference Claude-Code-only bin tools degrade silently in hermes.
+>
+> **Language:** The skill body is written in English, but **respond to the user in the user's language** (if the user writes in Russian — translate all questions, option labels, and prose to Russian on the fly). Keep technical identifiers — file paths, code, slash-commands, env vars, YAML keys — in their original form.
 
 ## When to invoke this skill
 

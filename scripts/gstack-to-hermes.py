@@ -54,7 +54,12 @@ HERMES_NOTE = (
     "ask the user in a plain chat message and wait for the reply. "
     "Artifact paths use `~/.hermes/projects/<slug>/` instead of `~/.gstack/projects/<slug>/`. "
     "Skill content is preserved as-is from upstream — Plan Mode / Voice / Telemetry "
-    "sections that reference Claude-Code-only bin tools degrade silently in hermes."
+    "sections that reference Claude-Code-only bin tools degrade silently in hermes.\n"
+    ">\n"
+    "> **Language:** The skill body is written in English, but **respond to the user in "
+    "the user's language** (if the user writes in Russian — translate all questions, "
+    "option labels, and prose to Russian on the fly). Keep technical identifiers — "
+    "file paths, code, slash-commands, env vars, YAML keys — in their original form."
 )
 
 # Disclaimer мы сами добавили в Claude Code форке — для hermes лишний.
