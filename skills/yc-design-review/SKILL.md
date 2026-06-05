@@ -13,10 +13,13 @@ metadata:
 >
 > **Language:** The skill body is written in English, but respond to the user in the user's language. If the user writes in Russian — translate all questions, option labels, and prose to Russian on the fly. Keep technical identifiers — file paths, code, slash-commands, env vars, YAML keys — in their original form.
 >
-> **Output formatting (Telegram/Discord/Slack gateways):**
-> - In **prose reply text** (regular message body, including numbered/bulleted lists you write directly to the user) — `**markdown bold**` is OK for option labels and key terms. The gateway's `format_message` converts it to platform-native bold. Example: `1. **A) SCOPE EXPANSION** — расширяем scope в 4 направлениях`.
-> - In `clarify_tool` calls — the `choices` array values must be **PLAIN TEXT** with NO `**bold**` or `__underline__`. The inline-keyboard render path does NOT apply MarkdownV2 conversion, so double-asterisks leak as literal characters.
-> - Additional emphasis: «кавычки-ёлочки» for quotes, ALL CAPS for category labels, `→` prefix for list items. Single `*italic*` and inline `\`code\`` are fine in both prose and clarify choices.
+> **Output formatting (Telegram/Discord/Slack gateways) — three rules:**
+> 1. **Standalone headers / paragraph titles** — `**bold**` is OK and renders correctly via `format_message` → MarkdownV2. Example on its own line:
+>    `**Что зафиксировано**`
+> 2. **Inside bullet or numbered list items** — DO NOT use `**bold**`. Telegram MarkdownV2 conversion is buggy for inline list emphasis and double-asterisks leak as literal `**`. Instead use ALL CAPS or trailing colon:
+>    `• PHASE 1`  or  `• Phase 1:`  (NOT `• **Phase 1**`)
+> 3. **Inside `clarify_tool` `choices` array** — PLAIN TEXT only. No `**bold**`, no `__underline__`. The inline-keyboard render path does NOT apply MarkdownV2 conversion.
+> Additional emphasis tools: «кавычки-ёлочки» for quotes, `→` prefix for lists. Single `*italic*` and inline `\`code\`` are fine everywhere.
 >
 > **Pipeline auto-progression:** If this skill's frontmatter has `metadata.hermes.pipeline_successor: <next-skill-name>`, then AFTER you finish the skill body (delivered the design doc / review / artifact and saved any files), you MUST call `clarify_tool` with question `"Готово. Дальше — /<next-skill-name>?"` and choices `["Да, запусти /<next>", "Пропустить", "Сделать другое"]` (translated to the user's language). On user's pick:
 > - «Да»: `read_file('~/.hermes/skills/gstack-hermes/<next>/SKILL.md')`, then follow its instructions step-by-step (hermes has no `skill_load` tool — read+execute is the path).
